@@ -1,7 +1,9 @@
 {
   stdenv,
   lib,
-  fetchzip,
+  fetchFromGitHub,
+  xcbuildHook,
+  ibtool,
   makeBinaryWrapper,
   versionCheckHook,
 }:
@@ -11,21 +13,33 @@ stdenv.mkDerivation (finalAttrs: {
 
   version = "2.0.0";
 
-  src = fetchzip {
-    url = "https://github.com/julienXX/terminal-notifier/releases/download/${finalAttrs.version}/terminal-notifier-${finalAttrs.version}.zip";
-    sha256 = "0gi54v92hi1fkryxlz3k5s5d8h0s66cc57ds0vbm1m1qk3z4xhb0";
-    stripRoot = false;
+  src = fetchFromGitHub {
+    owner = "julienXX";
+    repo = "terminal-notifier";
+    tag = finalAttrs.version;
+    hash = "sha256-Hd9cI3R2nQK2deBb5CBYz4DTHAEcO4vzqtA5qZwa1Ao=";
   };
 
-  dontBuild = true;
+  __structuredAttrs = true;
 
-  nativeBuildInputs = [ makeBinaryWrapper ];
+  nativeBuildInputs = [
+    xcbuildHook
+    ibtool
+    makeBinaryWrapper
+  ];
+
+  xcbuildFlags = [
+    "-project"
+    "Terminal Notifier.xcodeproj"
+    "-target"
+    "terminal-notifier"
+  ];
 
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out/Applications
-    cp -r terminal-notifier.app $out/Applications
+    cp -r Products/Release/terminal-notifier.app $out/Applications
     makeWrapper $out/Applications/terminal-notifier.app/Contents/MacOS/terminal-notifier $out/bin/terminal-notifier
 
     runHook postInstall
@@ -37,7 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Send User Notifications on macOS from the command-line";
-    maintainers = [ ];
+    maintainers = with lib.maintainers; [ cohei ];
     homepage = "https://github.com/julienXX/terminal-notifier";
     license = lib.licenses.mit;
     platforms = lib.platforms.darwin;
