@@ -3,6 +3,7 @@
   runtimeShell,
   lib,
   fetchzip,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation rec {
@@ -29,6 +30,10 @@ stdenv.mkDerivation rec {
     EOF
     chmod +x $out/bin/terminal-notifier
   '';
+
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  doInstallCheck = true;
+  versionCheckProgramArg = "-version";
 
   meta = {
     maintainers = [ ];
