@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   dontBuild = true;
 
   installPhase = ''
+    runHook preInstall
+
     mkdir -p $out/Applications
     mkdir -p $out/bin
     cp -r terminal-notifier.app $out/Applications
@@ -29,6 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
     exec ./Contents/MacOS/terminal-notifier "\$@"
     EOF
     chmod +x $out/bin/terminal-notifier
+
+    runHook postInstall
   '';
 
   nativeInstallCheckInputs = [ versionCheckHook ];
