@@ -1,8 +1,8 @@
 {
   stdenv,
-  runtimeShell,
   lib,
   fetchzip,
+  makeBinaryWrapper,
   versionCheckHook,
 }:
 
@@ -19,18 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   dontBuild = true;
 
+  nativeBuildInputs = [ makeBinaryWrapper ];
+
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out/Applications
-    mkdir -p $out/bin
     cp -r terminal-notifier.app $out/Applications
-    cat >$out/bin/terminal-notifier <<EOF
-    #!${runtimeShell}
-    cd $out/Applications/terminal-notifier.app
-    exec ./Contents/MacOS/terminal-notifier "\$@"
-    EOF
-    chmod +x $out/bin/terminal-notifier
+    makeWrapper $out/Applications/terminal-notifier.app/Contents/MacOS/terminal-notifier $out/bin/terminal-notifier
 
     runHook postInstall
   '';
